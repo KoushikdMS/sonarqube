@@ -382,6 +382,7 @@ public class ComponentDaoTest {
     assertThat(files).extracting("moduleUuid").containsOnly("EFGH", "FGHI");
     assertThat(files).extracting("srcHash").containsOnly("srcEFGHI", "srcHIJK");
     assertThat(files).extracting("path").containsOnly("src/org/struts/pom.xml", "src/org/struts/RequestContext.java");
+    assertThat(files).extracting("revision").containsOnly("123456789");
 
     // From module
     files = underTest.selectEnabledDescendantFiles(db.getSession(), "EFGH");
@@ -389,6 +390,7 @@ public class ComponentDaoTest {
     assertThat(files).extracting("moduleUuid").containsOnly("EFGH", "FGHI");
     assertThat(files).extracting("srcHash").containsOnly("srcEFGHI", "srcHIJK");
     assertThat(files).extracting("path").containsOnly("src/org/struts/pom.xml", "src/org/struts/RequestContext.java");
+    assertThat(files).extracting("revision").containsOnly("123456789");
 
     // From sub module
     files = underTest.selectEnabledDescendantFiles(db.getSession(), "FGHI");
@@ -396,6 +398,7 @@ public class ComponentDaoTest {
     assertThat(files).extracting("moduleUuid").containsOnly("FGHI");
     assertThat(files).extracting("srcHash").containsOnly("srcHIJK");
     assertThat(files).extracting("path").containsOnly("src/org/struts/RequestContext.java");
+    assertThat(files).extracting("revision").containsOnly("123456789");
 
     // From directory
     assertThat(underTest.selectEnabledDescendantFiles(db.getSession(), "GHIJ")).isEmpty();
