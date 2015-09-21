@@ -28,32 +28,38 @@ import org.sonar.db.ce.CeActivityDto;
 
 import static java.lang.String.format;
 
-public class CeWorkerImpl implements CeWorker {
+class CeWorkerRunnable implements Runnable {
 
-  private static final Logger LOG = Loggers.get(CeWorkerImpl.class);
+  private static final Logger LOG = Loggers.get(CeWorkerRunnable.class);
 
   private final CeQueue queue;
   private final ReportTaskProcessor reportTaskProcessor;
 
-  public CeWorkerImpl(CeQueue queue, ReportTaskProcessor reportTaskProcessor) {
+  public CeWorkerRunnable(CeQueue queue, ReportTaskProcessor reportTaskProcessor) {
     this.queue = queue;
     this.reportTaskProcessor = reportTaskProcessor;
   }
 
   @Override
   public void run() {
-    CeTask task;
-    try {
-      Optional<CeTask> taskOpt = queue.peek();
-      if (!taskOpt.isPresent()) {
-        return;
-      }
-      task = taskOpt.get();
-    } catch (Exception e) {
-      LOG.error("Failed to pop the queue of analysis reports", e);
+    Optional<CeTask> ceTask = tryAndFindTaskToExecute();
+    if (!ceTask.isPresent()) {
       return;
     }
 
+    executeTask(ceTask.get());
+  }
+
+  private Optional<CeTask> tryAndFindTaskToExecute() {
+    try {
+      return queue.peek();
+    } catch (Exception e) {
+      LOG.error("Failed to pop the queue of analysis reports", e);
+    }
+    return Optional.absent();
+  }
+
+  private void executeTask(CeTask task) {
     // TODO delegate the message to the related task processor, according to task type
     Profiler profiler = Profiler.create(LOG).startInfo(format("Analysis of project %s (report %s)", task.getComponentKey(), task.getUuid()));
     try {
@@ -63,8 +69,7 @@ public class CeWorkerImpl implements CeWorker {
       LOG.error(format("Failed to process task %s", task.getUuid()), e);
       queue.remove(task, CeActivityDto.Status.FAILED);
     } finally {
-
-      profiler.stopInfo();
+      profiler.stopInfo(String.format("Total thread execution of project %s (report %s)", task.getComponentUuid(), task.getUuid()));
     }
   }
 }

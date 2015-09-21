@@ -30,11 +30,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-public class CeWorkerImplTest {
+public class CeWorkerRunnableTest {
 
   CeQueue queue = mock(CeQueueImpl.class);
   ReportTaskProcessor taskProcessor = mock(ReportTaskProcessor.class);
-  CeWorker underTest = new CeWorkerImpl(queue, taskProcessor);
+  CeWorkerRunnable underTest = new CeWorkerRunnable(queue, taskProcessor);
 
   @Test
   public void no_pending_tasks_in_queue() throws Exception {
