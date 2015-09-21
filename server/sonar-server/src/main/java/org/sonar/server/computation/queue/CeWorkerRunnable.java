@@ -18,13 +18,14 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package org.sonar.server.computation;
+package org.sonar.server.computation.queue;
 
 import com.google.common.base.Optional;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 import org.sonar.core.util.logs.Profiler;
 import org.sonar.db.ce.CeActivityDto;
+import org.sonar.server.computation.queue.report.ReportTaskProcessor;
 
 import static java.lang.String.format;
 

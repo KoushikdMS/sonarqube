@@ -17,33 +17,55 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonar.server.computation;
+package org.sonar.server.computation.queue;
 
+import com.google.common.base.Optional;
 import org.junit.Test;
 import org.sonar.db.ce.CeActivityDto;
 import org.sonar.db.ce.CeTaskTypes;
+import org.sonar.server.computation.queue.report.ReportTaskProcessor;
 
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
-public class CleanReportQueueListenerTest {
+public class CeWorkerRunnableTest {
 
-  ReportFiles reportFiles = mock(ReportFiles.class);
-  CleanReportQueueListener underTest = new CleanReportQueueListener(reportFiles);
+  CeQueue queue = mock(CeQueueImpl.class);
+  ReportTaskProcessor taskProcessor = mock(ReportTaskProcessor.class);
+  CeWorkerRunnable underTest = new CeWorkerRunnable(queue, taskProcessor);
 
   @Test
-  public void remove_report_file_if_success() {
-    CeTask task = new CeTask.Builder().setUuid("TASK_1").setType(CeTaskTypes.REPORT).setComponentUuid("PROJECT_1").setSubmitterLogin(null).build();
+  public void no_pending_tasks_in_queue() throws Exception {
+    when(queue.peek()).thenReturn(Optional.<CeTask>absent());
 
-    underTest.onRemoved(task, CeActivityDto.Status.SUCCESS);
-    verify(reportFiles).deleteIfExists("TASK_1");
+    underTest.run();
+
+    verifyZeroInteractions(taskProcessor);
   }
 
   @Test
-  public void remove_report_file_if_failure() {
+  public void peek_and_process_task() throws Exception {
     CeTask task = new CeTask.Builder().setUuid("TASK_1").setType(CeTaskTypes.REPORT).setComponentUuid("PROJECT_1").setSubmitterLogin(null).build();
+    when(queue.peek()).thenReturn(Optional.of(task));
 
-    underTest.onRemoved(task, CeActivityDto.Status.FAILED);
-    verify(reportFiles).deleteIfExists("TASK_1");
+    underTest.run();
+
+    verify(taskProcessor).process(task);
+    verify(queue).remove(task, CeActivityDto.Status.SUCCESS);
+  }
+
+  @Test
+  public void fail_to_process_task() throws Exception {
+    CeTask task = new CeTask.Builder().setUuid("TASK_1").setType(CeTaskTypes.REPORT).setComponentUuid("PROJECT_1").setSubmitterLogin(null).build();
+    when(queue.peek()).thenReturn(Optional.of(task));
+    doThrow(new IllegalStateException()).when(taskProcessor).process(task);
+
+    underTest.run();
+
+    verify(taskProcessor).process(task);
+    verify(queue).remove(task, CeActivityDto.Status.FAILED);
   }
 }

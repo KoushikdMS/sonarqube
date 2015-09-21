@@ -17,10 +17,11 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonar.server.computation;
+package org.sonar.server.computation.queue;
 
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
+import org.sonar.server.computation.queue.report.ReportTaskProcessor;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
