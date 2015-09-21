@@ -40,7 +40,7 @@ public class DefaultServerIssuesLoader implements ServerIssuesLoader {
 
   @Override
   public boolean load(String componentKey, Function<ServerIssue, Void> consumer) {
-    WSLoaderResult<ByteSource> result = wsLoader.loadSource("/scanner/issues?key=" + BatchUtils.encodeForUrl(componentKey));
+    WSLoaderResult<InputStream> result = wsLoader.loadStream("/scanner/issues?key=" + BatchUtils.encodeForUrl(componentKey));
     parseIssues(result.get(), consumer);
     return result.isFromCache();
   }
