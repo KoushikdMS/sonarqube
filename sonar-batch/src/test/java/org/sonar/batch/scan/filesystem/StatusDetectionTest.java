@@ -19,21 +19,21 @@
  */
 package org.sonar.batch.scan.filesystem;
 
+import org.sonarqube.ws.WsScanner.WsProjectResponse.FileData;
+
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 import org.junit.Test;
 import org.sonar.api.batch.fs.InputFile;
-import org.sonar.batch.protocol.input.FileData;
-import org.sonar.batch.repository.ProjectSettingsRepo;
-
+import org.sonar.batch.repository.ProjectRepositories;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class StatusDetectionTest {
   @Test
   public void detect_status() {
     Table<String, String, String> t = ImmutableTable.of();
-    ProjectSettingsRepo ref = new ProjectSettingsRepo(t, createTable(), null);
+    ProjectRepositories ref = new ProjectRepositories(t, createTable(), null);
     StatusDetection statusDetection = new StatusDetection(ref);
 
     assertThat(statusDetection.status("foo", "src/Foo.java", "ABCDE")).isEqualTo(InputFile.Status.SAME);
@@ -44,8 +44,8 @@ public class StatusDetectionTest {
   private static Table<String, String, FileData> createTable() {
     Table<String, String, FileData> t = HashBasedTable.create();
 
-    t.put("foo", "src/Foo.java", new FileData("ABCDE", "12345789"));
-    t.put("foo", "src/Bar.java", new FileData("FGHIJ", "123456789"));
+    t.put("foo", "src/Foo.java", FileData.newBuilder().setHash("ABCDE").setRevision("12345789").build());
+    t.put("foo", "src/Bar.java", FileData.newBuilder().setHash("FGHIJ").setRevision("123456789").build());
 
     return t;
   }

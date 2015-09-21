@@ -25,24 +25,21 @@ import org.sonar.api.utils.log.Loggers;
 import javax.annotation.Nullable;
 
 import org.sonar.batch.analysis.DefaultAnalysisMode;
-import org.sonar.batch.protocol.input.FileData;
-import com.google.common.collect.Table;
-import com.google.common.collect.ImmutableTable;
 import org.apache.commons.lang.mutable.MutableBoolean;
 import org.sonar.api.batch.bootstrap.ProjectReactor;
 import org.picocontainer.injectors.ProviderAdapter;
 
-public class ProjectSettingsProvider extends ProviderAdapter {
-  private static final Logger LOG = Loggers.get(ProjectSettingsProvider.class);
-  private ProjectSettingsRepo settings = null;
+public class ProjectRepositoriesProvider extends ProviderAdapter {
+  private static final Logger LOG = Loggers.get(ProjectRepositoriesProvider.class);
+  private ProjectRepositories settings = null;
 
-  public ProjectSettingsRepo provide(@Nullable ProjectSettingsLoader loader, ProjectReactor projectReactor, DefaultAnalysisMode mode) {
+  public ProjectRepositories provide(@Nullable ProjectRepositoriesLoader loader, ProjectReactor projectReactor, DefaultAnalysisMode mode) {
     if (settings == null) {
       if (mode.isNotAssociated()) {
-        settings = createNonAssociatedProjectSettings();
+        settings = createNonAssociatedProjectRepositories();
       } else {
         MutableBoolean fromCache = new MutableBoolean();
-        settings = loader.load(projectReactor.getRoot().getKeyWithBranch(), fromCache);
+        settings = loader.load(projectReactor.getRoot().getKeyWithBranch(), mode.isIssues(), fromCache);
         checkProject(mode);
       }
     }
@@ -51,14 +48,16 @@ public class ProjectSettingsProvider extends ProviderAdapter {
   }
 
   private void checkProject(DefaultAnalysisMode mode) {
-    if (mode.isIssues() && settings.lastAnalysisDate() == null) {
-      LOG.warn("No analysis has been found on the server for this project. All issues will be marked as 'new'.");
+    if (mode.isIssues()) {
+      if (!settings.exists()) {
+        LOG.warn("Project doesn't exist on the server. All issues will be marked as 'new'.");
+      } else if (settings.lastAnalysisDate() == null) {
+        LOG.warn("No analysis has been found on the server for this project. All issues will be marked as 'new'.");
+      }
     }
   }
 
-  private static ProjectSettingsRepo createNonAssociatedProjectSettings() {
-    Table<String, String, String> emptySettings = ImmutableTable.of();
-    Table<String, String, FileData> emptyFileData = ImmutableTable.of();
-    return new ProjectSettingsRepo(emptySettings, emptyFileData, null);
+  private static ProjectRepositories createNonAssociatedProjectRepositories() {
+    return new ProjectRepositories();
   }
 }

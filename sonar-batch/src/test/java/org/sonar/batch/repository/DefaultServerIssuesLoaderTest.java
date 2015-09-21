@@ -75,15 +75,9 @@ public class DefaultServerIssuesLoaderTest {
 
   @Test(expected = IllegalStateException.class)
   public void testError() throws IOException {
-<<<<<<< HEAD
-    ByteSource source = mock(ByteSource.class);
-    when(source.openBufferedStream()).thenThrow(IOException.class);
-    when(wsLoader.loadSource("/scanner/issues?key=foo")).thenReturn(new WSLoaderResult<ByteSource>(source, true));
-=======
     InputStream is = mock(InputStream.class);
     when(is.read()).thenThrow(IOException.class);
-    when(wsLoader.loadStream("/batch/issues?key=foo")).thenReturn(new WSLoaderResult<InputStream>(is, true));
->>>>>>> SONAR-6777 Project cache sync
+    when(wsLoader.loadStream("/scanner/issues?key=foo")).thenReturn(new WSLoaderResult<InputStream>(is, true));
     loader.load("foo", mock(Function.class));
   }
 }

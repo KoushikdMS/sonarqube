@@ -19,16 +19,19 @@
  */
 package org.sonar.batch.mediumtest.cache;
 
+
+import org.sonarqube.ws.WsScanner.WsProjectResponse.FileData;
+
 import com.google.common.collect.ImmutableMap;
+
 import java.util.Date;
+
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.sonar.api.CoreProperties;
 import org.sonar.batch.mediumtest.BatchMediumTester;
-import org.sonar.batch.protocol.input.ActiveRule;
-import org.sonar.batch.protocol.input.FileData;
 import org.sonar.xoo.XooPlugin;
 import org.sonar.xoo.rule.XooRulesDefinition;
 
@@ -48,14 +51,14 @@ public class CacheSyncTest {
 
   @Test
   public void testSyncFirstTime() {
-    FileData file1 = new FileData("hash", "123456789");
+    FileData file1 = FileData.newBuilder().setHash("hash").setRevision("123456789").build();
 
     tester = BatchMediumTester.builder()
       .bootstrapProperties(ImmutableMap.of(CoreProperties.ANALYSIS_MODE, CoreProperties.ANALYSIS_MODE_ISSUES))
       .registerPlugin("xoo", new XooPlugin())
       .addRules(new XooRulesDefinition())
       .addQProfile("lang", "name")
-      .activateRule(new ActiveRule("xoo", "OneIssuePerLine", null, "One issue per line", "MAJOR", "my/internal/key", "xoo"))
+      .addActiveRule("xoo", "OneIssuePerLine", null, "One issue per line", "MAJOR", "my/internal/key", "xoo")
       .setPreviousAnalysisDate(new Date())
       .addFileData("test-project", "file1", file1)
       .build();
@@ -66,14 +69,14 @@ public class CacheSyncTest {
 
   @Test
   public void testNonAssociated() {
-    FileData file1 = new FileData("hash", "123456789");
+    FileData file1 = FileData.newBuilder().setHash("hash").setRevision("123456789").build();
 
     tester = BatchMediumTester.builder()
       .bootstrapProperties(ImmutableMap.of(CoreProperties.ANALYSIS_MODE, CoreProperties.ANALYSIS_MODE_ISSUES))
       .registerPlugin("xoo", new XooPlugin())
       .addRules(new XooRulesDefinition())
       .addQProfile("lang", "name")
-      .activateRule(new ActiveRule("xoo", "OneIssuePerLine", null, "One issue per line", "MAJOR", "my/internal/key", "xoo"))
+      .addActiveRule("xoo", "OneIssuePerLine", null, "One issue per line", "MAJOR", "my/internal/key", "xoo")
       .setPreviousAnalysisDate(new Date())
       .addFileData("test-project", "file1", file1)
       .build();
@@ -84,13 +87,13 @@ public class CacheSyncTest {
 
   @Test
   public void testNoQProfile() {
-    FileData file1 = new FileData("hash", "123456789");
+    FileData file1 = FileData.newBuilder().setHash("hash").setRevision("123456789").build();
 
     tester = BatchMediumTester.builder()
       .bootstrapProperties(ImmutableMap.of(CoreProperties.ANALYSIS_MODE, CoreProperties.ANALYSIS_MODE_ISSUES))
       .registerPlugin("xoo", new XooPlugin())
       .addRules(new XooRulesDefinition())
-      .activateRule(new ActiveRule("xoo", "OneIssuePerLine", null, "One issue per line", "MAJOR", "my/internal/key", "xoo"))
+      .addActiveRule("xoo", "OneIssuePerLine", null, "One issue per line", "MAJOR", "my/internal/key", "xoo")
       .setPreviousAnalysisDate(new Date())
       .addFileData("test-project", "file1", file1)
       .build();

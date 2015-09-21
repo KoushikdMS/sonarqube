@@ -19,6 +19,8 @@
  */
 package org.sonar.batch.mediumtest.scm;
 
+import org.sonarqube.ws.WsScanner.WsProjectResponse.FileData;
+
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -30,7 +32,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.sonar.batch.mediumtest.BatchMediumTester;
 import org.sonar.batch.mediumtest.BatchMediumTester.TaskBuilder;
-import org.sonar.batch.protocol.input.FileData;
 import org.sonar.batch.protocol.output.BatchReport;
 import org.sonar.batch.protocol.output.BatchReport.Changesets.Changeset;
 import org.sonar.batch.protocol.output.BatchReport.Component;
@@ -55,7 +56,9 @@ public class ScmMediumTest {
   public BatchMediumTester tester = BatchMediumTester.builder()
     .registerPlugin("xoo", new XooPlugin())
     .addDefaultQProfile("xoo", "Sonar Way")
-    .addFileData("com.foo.project", "src/sample2.xoo", new FileData(DigestUtils.md5Hex(SAMPLE_XOO_CONTENT), null))
+    .addFileData("com.foo.project", "src/sample2.xoo", FileData.newBuilder()
+      .setHash(DigestUtils.md5Hex(SAMPLE_XOO_CONTENT))
+      .build())
     .build();
 
   @Before

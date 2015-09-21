@@ -19,30 +19,41 @@
  */
 package org.sonar.batch.repository;
 
-import org.sonar.batch.protocol.input.QProfile;
+import org.sonarqube.ws.QualityProfiles.WsSearchResponse.QualityProfile;
+import org.sonar.batch.analysis.DefaultAnalysisMode;
+import org.sonar.api.batch.bootstrap.ProjectKey;
 
-import java.util.Collection;
+import java.util.List;
 
-import org.sonar.api.batch.AnalysisMode;
 import org.sonar.batch.analysis.AnalysisProperties;
-import org.sonar.api.batch.bootstrap.ProjectReactor;
 import org.sonar.batch.rule.ModuleQProfiles;
 import org.picocontainer.injectors.ProviderAdapter;
 
 public class QualityProfileProvider extends ProviderAdapter {
   private ModuleQProfiles profiles = null;
 
-  public ModuleQProfiles provide(ProjectReactor projectReactor, QualityProfileLoader loader, AnalysisProperties props, AnalysisMode mode) {
+  public ModuleQProfiles provide(ProjectKey projectKey, QualityProfileLoader loader, ProjectRepositories projectRepositories, AnalysisProperties props, DefaultAnalysisMode mode) {
     if (this.profiles == null) {
-      String profile = null;
-      if (!mode.isIssues()) {
-        profile = props.property(ModuleQProfiles.SONAR_PROFILE_PROP);
+      List<QualityProfile> profileList;
+
+      if (mode.isNotAssociated() || !projectRepositories.exists()) {
+        profileList = loader.loadDefault(null);
+      } else {
+        profileList = loader.load(projectKey.get(), getSonarProfile(props, mode), null);
       }
-      Collection<QProfile> qps = loader.load(projectReactor.getRoot().getKeyWithBranch(), profile);
-      profiles = new ModuleQProfiles(qps);
+
+      profiles = new ModuleQProfiles(profileList);
     }
 
     return profiles;
+  }
+
+  private static String getSonarProfile(AnalysisProperties props, DefaultAnalysisMode mode) {
+    String profile = null;
+    if (!mode.isIssues()) {
+      profile = props.property(ModuleQProfiles.SONAR_PROFILE_PROP);
+    }
+    return profile;
   }
 
 }
