@@ -25,7 +25,6 @@ import org.junit.Test;
 import org.sonar.api.server.ws.RailsHandler;
 import org.sonar.api.server.ws.WebService;
 import org.sonar.db.DbClient;
-import org.sonar.server.permission.PermissionFinder;
 import org.sonar.server.user.UserSession;
 import org.sonar.server.ws.WsTester;
 
@@ -39,7 +38,7 @@ public class PermissionsWsTest {
   @Before
   public void setUp() {
     ws = new WsTester(new PermissionsWs(
-      new TemplateUsersAction(mock(DbClient.class), mock(UserSession.class), mock(PermissionFinder.class), mock(PermissionDependenciesFinder.class))
+      new TemplateUsersAction(mock(DbClient.class), mock(UserSession.class), mock(PermissionDependenciesFinder.class))
       ));
   }
 

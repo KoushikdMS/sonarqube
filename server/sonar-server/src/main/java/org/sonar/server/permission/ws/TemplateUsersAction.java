@@ -31,7 +31,6 @@ import org.sonar.db.DbSession;
 import org.sonar.db.permission.PermissionQuery;
 import org.sonar.db.permission.PermissionTemplateDto;
 import org.sonar.db.permission.UserWithPermissionDto;
-import org.sonar.server.permission.PermissionFinder;
 import org.sonar.server.user.UserSession;
 import org.sonarqube.ws.WsPermissions.WsTemplateUsersResponse;
 import org.sonarqube.ws.WsPermissions.WsTemplateUsersResponse.User;
@@ -49,13 +48,11 @@ public class TemplateUsersAction implements PermissionsWsAction {
 
   private final DbClient dbClient;
   private final UserSession userSession;
-  private final PermissionFinder permissionFinder;
   private final PermissionDependenciesFinder dependenciesFinder;
 
-  public TemplateUsersAction(DbClient dbClient, UserSession userSession, PermissionFinder permissionFinder, PermissionDependenciesFinder dependenciesFinder) {
+  public TemplateUsersAction(DbClient dbClient, UserSession userSession, PermissionDependenciesFinder dependenciesFinder) {
     this.dbClient = dbClient;
     this.userSession = userSession;
-    this.permissionFinder = permissionFinder;
     this.dependenciesFinder = dependenciesFinder;
   }
 
@@ -88,7 +85,7 @@ public class TemplateUsersAction implements PermissionsWsAction {
       WsTemplateRef templateRef = WsTemplateRef.fromRequest(wsRequest);
       PermissionTemplateDto template = dependenciesFinder.getTemplate(dbSession, templateRef);
 
-      PermissionQuery query = buildQuery(dbSession, wsRequest, template);
+      PermissionQuery query = buildQuery(wsRequest, template);
       WsTemplateUsersResponse templateUsersResponse = buildResponse(dbSession, query, template);
       writeProtobuf(templateUsersResponse, wsRequest, wsResponse);
     } finally {
@@ -96,7 +93,7 @@ public class TemplateUsersAction implements PermissionsWsAction {
     }
   }
 
-  private PermissionQuery buildQuery(DbSession dbSession, Request wsRequest, PermissionTemplateDto template) {
+  private static PermissionQuery buildQuery(Request wsRequest, PermissionTemplateDto template) {
     String permission = validateProjectPermission(wsRequest.mandatoryParam(PARAM_PERMISSION));
 
     return PermissionQuery.builder()

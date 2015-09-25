@@ -43,7 +43,6 @@ import org.sonar.server.exceptions.BadRequestException;
 import org.sonar.server.exceptions.ForbiddenException;
 import org.sonar.server.exceptions.NotFoundException;
 import org.sonar.server.exceptions.UnauthorizedException;
-import org.sonar.server.permission.PermissionFinder;
 import org.sonar.server.tester.UserSessionRule;
 import org.sonar.server.ws.TestRequest;
 import org.sonar.server.ws.WsActionTester;
@@ -78,9 +77,8 @@ public class TemplateUsersActionTest {
 
   @Before
   public void setUp() {
-    PermissionFinder permissionFinder = new PermissionFinder(dbClient);
     PermissionDependenciesFinder dependenciesFinder = new PermissionDependenciesFinder(dbClient, new ComponentFinder(dbClient));
-    underTest = new TemplateUsersAction(dbClient, userSession, permissionFinder, dependenciesFinder);
+    underTest = new TemplateUsersAction(dbClient, userSession, dependenciesFinder);
     ws = new WsActionTester(underTest);
 
     userSession.login("login").setGlobalPermissions(ADMIN);
