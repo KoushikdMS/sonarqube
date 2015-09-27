@@ -36,8 +36,7 @@ MYSQL)
 WEB)
   installTravisTools
 
-  . ~/.nvm/nvm.sh
-  nvm install 4.1.1
+  rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install 4
   cd server/sonar-web && npm install
   ;;
 
